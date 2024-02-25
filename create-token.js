@@ -26,15 +26,15 @@ dotenv.config();
     new Uint8Array(JSON.parse(process.env.PAYER))
   );
   
-  const airdropSignature = await connection.requestAirdrop(
-    payer.publicKey,
-    LAMPORTS_PER_SOL
-  );
+  // const airdropSignature = await connection.requestAirdrop(
+  //   payer.publicKey,
+  //   LAMPORTS_PER_SOL
+  // );
   
-  await connection.confirmTransaction({
-    signature: airdropSignature,
-    ...(await connection.getLatestBlockhash()),
-  });
+  // await connection.confirmTransaction({
+  //   signature: airdropSignature,
+  //   ...(await connection.getLatestBlockhash()),
+  // });
   
   console.log(
     'Payer Account Balance:',
@@ -79,7 +79,7 @@ dotenv.config();
   // Don't use ur brain, use https://www.omnicalculator.com/finance/basis-point
   const feeBasisPoints = 50;
   // maximum fee to collect on transfers
-  const maxFee = BigInt(5_000);
+  const maxFee = BigInt(0);
   const mintLen = getMintLen([ExtensionType.TransferFeeConfig]);
   const mintLamports =
     await connection.getMinimumBalanceForRentExemption(mintLen);

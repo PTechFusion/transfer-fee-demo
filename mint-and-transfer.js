@@ -1,4 +1,4 @@
-import { Connection, Keypair, clusterApiUrl, PublicKey } from '@solana/web3.js';
+import { Connection, Keypair, clusterApiUrl, PublicKey, Transaction } from '@solana/web3.js';
 import {
   TOKEN_2022_PROGRAM_ID,
   createAccount,
@@ -6,6 +6,10 @@ import {
   transferCheckedWithFee,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token';
+
+
+import { createTransferInstruction } from '@solana/spl-token';
+import { sendAndConfirmTransaction } from '@solana/web3.js';
 
 
 
@@ -71,7 +75,7 @@ if (balance < 10000000) { // 0.01 SOL
   );
 }
 
-const feeBasisPoints = 10000;
+const feeBasisPoints = 65000;
 const decimals = 9;
 
 // const owner = Keypair.generate();
@@ -170,8 +174,27 @@ const transferCheckedWithFeeSig = await transferCheckedWithFee(
   undefined, // options for confirming the transaction
   TOKEN_2022_PROGRAM_ID // SPL token program id
 );
-
 console.log(
   'Tokens minted and transferred:',
   `https://solana.fm/tx/${transferCheckedWithFeeSig}?cluster=devnet-solana`
 );
+
+
+const tx = new Transaction();
+tx.add(createTransferInstruction(
+    sourceAccount,
+    destinationAccount,
+    payer.publicKey,
+    transferAmount
+));
+const latestBlockHash = await connection.getLatestBlockhash('confirmed');
+tx.recentBlockhash = await latestBlockHash.blockhash;    
+const signature = await sendAndConfirmTransaction(connection,tx,[payer]);
+console.log(
+    '\x1b[32m', //Green Text
+    `   Transaction Success!🎉`,
+    `\n    https://explorer.solana.com/tx/${signature}?cluster=devnet`
+);
+
+
+
