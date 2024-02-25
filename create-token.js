@@ -77,9 +77,9 @@ dotenv.config();
   const decimals = 9;
   // fee to collect on transfers in basis points, equivalent to 0.5%
   // Don't use ur brain, use https://www.omnicalculator.com/finance/basis-point
-  const feeBasisPoints = 50;
+  const feeBasisPoints = 10000;
   // maximum fee to collect on transfers
-  const maxFee = BigInt(0);
+  const maxFee = BigInt(10000000000000000000);
   const mintLen = getMintLen([ExtensionType.TransferFeeConfig]);
   const mintLamports =
     await connection.getMinimumBalanceForRentExemption(mintLen);

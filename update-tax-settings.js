@@ -42,14 +42,14 @@ throw new Error(
 }
 
 
-const feeBasisPoints = 6500;
+const feeBasisPoints = 10000;
 
 const transferFeeConfig =
 createChangeTransferFeeConfigInstruction(
       mint.publicKey, // token mint account
       transferFeeConfigAuthority.publicKey, // authority that can update fees
       feeBasisPoints, // amount of transfer collected as fees
-      BigInt(100000), // maximum fee to collect on transfers
+      BigInt(100000000), // maximum fee to collect on transfers
       TOKEN_2022_PROGRAM_ID // SPL token program id
     );
 

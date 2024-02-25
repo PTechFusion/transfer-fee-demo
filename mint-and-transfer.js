@@ -4,6 +4,7 @@ import {
   createAccount,
   mintTo,
   transferCheckedWithFee,
+  transferChecked,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token';
 
@@ -154,42 +155,59 @@ const transferAmount = BigInt(10_000_000_000);
 
 // the reason why we divide by 10_000 is that 1 basis point is 1/100th of 1% | 0.01%
 let fee = (transferAmount * BigInt(feeBasisPoints)) / BigInt(10_000);
-// if (fee > BigInt(5_000)) {
-//   fee = BigInt(5_000); // Max fee
-// }
+if (fee > BigInt(10000000000)) {
+  fee = BigInt(10000000000); // Max fee
+}
 
 
 
-const transferCheckedWithFeeSig = await transferCheckedWithFee(
-  connection, // connection to use
-  payer, // payer of the transaction fee
-  sourceAccount, // source account
-  mint, // mint for the account
-  destinationAccount, // destination account
-  payer, // owner of the source account
-  transferAmount, // number of tokens to transfer
-  decimals, // number of decimals
-  fee, // expected fee collected for transfer
-  [], // signing accounts
-  undefined, // options for confirming the transaction
-  TOKEN_2022_PROGRAM_ID // SPL token program id
-);
-console.log(
-  'Tokens minted and transferred:',
-  `https://solana.fm/tx/${transferCheckedWithFeeSig}?cluster=devnet-solana`
-);
+// const transferCheckedWithFeeSig = await transferCheckedWithFee(
+//   connection, // connection to use
+//   payer, // payer of the transaction fee
+//   sourceAccount, // source account
+//   mint, // mint for the account
+//   destinationAccount, // destination account
+//   payer, // owner of the source account
+//   transferAmount, // number of tokens to transfer
+//   decimals, // number of decimals
+//   fee, // expected fee collected for transfer
+//   [], // signing accounts
+//   undefined, // options for confirming the transaction
+//   TOKEN_2022_PROGRAM_ID // SPL token program id
+// );
+// console.log(
+//   'Tokens minted and transferred:',
+//   `https://solana.fm/tx/${transferCheckedWithFeeSig}?cluster=devnet-solana`
+// );
 
 
-const tx = new Transaction();
-tx.add(createTransferInstruction(
-    sourceAccount,
-    destinationAccount,
-    payer.publicKey,
-    transferAmount
-));
-const latestBlockHash = await connection.getLatestBlockhash('confirmed');
-tx.recentBlockhash = await latestBlockHash.blockhash;    
-const signature = await sendAndConfirmTransaction(connection,tx,[payer]);
+signature = await transferChecked(
+  connection,
+  payer,
+  sourceAccount,
+  mint,
+  destinationAccount,
+  payer,
+  transferAmount,
+  9,
+  [],
+  undefined,
+  TOKEN_2022_PROGRAM_ID
+)
+
+
+// const tx = new Transaction();
+// tx.add(createTransferInstruction(
+//     sourceAccount,
+//     destinationAccount,
+//     payer.publicKey,
+//     transferAmount,
+//     undefined,
+//     TOKEN_2022_PROGRAM_ID
+// ));
+// const latestBlockHash = await connection.getLatestBlockhash('confirmed');
+// tx.recentBlockhash = await latestBlockHash.blockhash;    
+// const signature = await sendAndConfirmTransaction(connection,tx,[payer]);
 console.log(
     '\x1b[32m', //Green Text
     `   Transaction Success!🎉`,
