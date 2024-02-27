@@ -14,7 +14,59 @@ import {
     createInitializeTransferFeeConfigInstruction,
     getMintLen,
     } from '@solana/spl-token';
+
+import { createCreateMetadataAccountV3Instruction} from '@metaplex-foundation/mpl-token-metadata';
+
 import { addKeypairToEnvFile } from '@solana-developers/node-helpers';
+
+import { createMetaData } from './add_metadata.cjs';
+
+
+createMetaData = async (connection, payer, mintAddress, name, symbol) => {
+  console.log("Creating meta-data transactions...");
+  const mint = new PublicKey(mintAddress);
+  const [ metadataPDA ] = PublicKey.findProgramAddressSync(
+      [
+          Buffer.from("metadata"),
+          PROGRAM_ID.toBuffer(),
+          mint.toBuffer()
+      ],
+      PROGRAM_ID
+  );
+  console.log("METADATA_PDA:", metadataPDA.toBase58());
+
+  const tokenMetadata = {
+      name: name,
+      symbol: symbol,
+      uri: "",
+      sellerFeeBasisPoints: 0,
+      creators: null,
+      collection: null,
+      uses: null,
+  };
+  const transaction = new Transaction().add(
+      createCreateMetadataAccountV3Instruction(
+          {
+              metadata: metadataPDA,
+              mint: mint,
+              mintAuthority: payer.publicKey,
+              payer: payer.publicKey,
+              updateAuthority: payer.publicKey,
+          },
+          {
+              createMetadataAccountArgsV3: {
+                  data: tokenMetadata,
+                  isMutable: true,
+                  collectionDetails: null,
+              },
+          }
+      )
+  );
+
+  const signature = await connection.sendTransaction(transaction, [payer]);
+  // await connection.confirmTransaction({ signature });
+  return signature;
+};
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -36,9 +88,11 @@ dotenv.config();
   //   ...(await connection.getLatestBlockhash()),
   // });
   
+  let balance = await connection.getBalance(payer.publicKey);
+
   console.log(
     'Payer Account Balance:',
-    await connection.getBalance(payer.publicKey)
+    balance/LAMPORTS_PER_SOL
   );
   
   // authority that can mint new tokens
@@ -77,9 +131,9 @@ dotenv.config();
   const decimals = 9;
   // fee to collect on transfers in basis points, equivalent to 0.5%
   // Don't use ur brain, use https://www.omnicalculator.com/finance/basis-point
-  const feeBasisPoints = 10000;
+  const feeBasisPoints = 0;
   // maximum fee to collect on transfers
-  const maxFee = BigInt(10000000000000000000);
+  const maxFee = BigInt(1000000 * 10^decimals);
   const mintLen = getMintLen([ExtensionType.TransferFeeConfig]);
   const mintLamports =
     await connection.getMinimumBalanceForRentExemption(mintLen);
@@ -128,3 +182,8 @@ dotenv.config();
     `https://solana.fm/tx/${mintTransactionSig}?cluster=devnet-solana`
   );
   
+  metadata_signature = await createMetaData(connection, payer, mint, "PTECH Token", "PTECH")
+  console.log(
+    'Token created!',
+    `https://solana.fm/tx/${metadata_signature}?cluster=devnet-solana`
+  );
